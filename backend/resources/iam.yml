@@ -1,0 +1,28 @@
+Resources:
+  AppSyncLambdaServiceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "${self:service}-${self:provider.stage}-Lambda-serviceRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "appsync.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: "${self:service}-${self:provider.stage}-Lambda-serviceRole-Policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "lambda:invokeFunction"
+                Resource:
+                  - !Sub "arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-*"
+      Tags: ${file(../commonResources/defaultTags.yml):TagsList}

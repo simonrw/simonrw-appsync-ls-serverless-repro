@@ -1,0 +1,27 @@
+---
+appSync:
+  name: "${self:service}-${self:provider.stage}-graphql"
+  xrayEnabled: true
+  authenticationType: AMAZON_COGNITO_USER_POOLS
+  userPoolConfig:
+    defaultAction: ALLOW
+    userPoolId: !Ref CognitoUserPoolUserPool
+  schema: schema.graphql
+  dataSources:
+    - type: AWS_LAMBDA
+      name: Lambda_users
+      description: 'users Lambda DataSource'
+      config:
+        functionName: users
+        serviceRoleArn: { Fn::GetAtt: [AppSyncLambdaServiceRole, Arn] }
+  mappingTemplates:
+    - type: Query
+      request: false
+      response: false
+      dataSource: Lambda_users
+      field: user
+    - type: Query
+      request: false
+      response: false
+      dataSource: Lambda_users
+      field: getUser

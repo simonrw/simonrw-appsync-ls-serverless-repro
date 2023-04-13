@@ -1,0 +1,7 @@
+{
+  "username": "testuser2",
+  "email": "testuser2@example.com",
+  "password": "TestPassword12!",
+  "action": "create",
+  "groups": "[SYSADMIN]"
+}

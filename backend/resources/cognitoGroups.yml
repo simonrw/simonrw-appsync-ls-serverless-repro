@@ -1,0 +1,6 @@
+Resources:
+  SysadminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: SYSADMIN
+      UserPoolId: !Ref CognitoUserPoolUserPool

@@ -1,0 +1,11 @@
+---
+TagsList: # Cannot append to list. Check [rds.yml] if changing these variables 
+  - Key: Contact
+    Value: "invalid@example.invalid"
+  - Key: Serverless
+    Value: "true"
+
+TagsObject:
+  Contact: "invalid@example.invalid"
+  Environment: "${self:provider.stage}"
+  Serverless: "true"

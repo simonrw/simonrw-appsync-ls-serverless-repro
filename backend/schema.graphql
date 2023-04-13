@@ -1,0 +1,25 @@
+schema {
+  query: Query
+}
+
+type Result {
+  message: String!
+}
+
+type UserAccount {
+  id: ID!
+  userName: String!
+  name: String!
+  email: String!
+}
+
+
+type Query {
+  user: UserAccount!
+    @aws_cognito_user_pools
+    @aws_auth
+
+  getUser(userName: String!): UserAccount!
+    @aws_cognito_user_pools(cognito_groups: ["SYSADMIN"])
+    @aws_auth(cognito_groups: ["SYSADMIN"])
+}

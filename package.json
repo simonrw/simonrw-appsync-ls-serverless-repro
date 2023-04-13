@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "@serverless/compose": "^1.3.0",
+    "@serverless/typescript": "^3.21.0",
+    "@types/node": "^18.11.9",
+    "serverless": "^3.30.1",
+    "serverless-appsync-plugin": "^1.14.0",
+    "serverless-appsync-simulator": "^0.20.0",
+    "serverless-build-client": "^2.5.0",
+    "serverless-cloudfront-invalidate": "^1.12.2",
+    "serverless-domain-manager": "^6.4.3",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-offline": "^11.6.0",
+    "serverless-output-to-env": "^1.0.2",
+    "serverless-plugin-conditional-functions": "^1.0.7",
+    "serverless-prune-plugin": "^2.0.1",
+    "serverless-python-requirements": "^6.0.0",
+    "serverless-s3-sync": "^3.1.0",
+    "serverless-vpc-plugin": "^1.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "resolutions": {
+    "cfn-resolver-lib": "1.1.7"
+  },
+  "scripts": {
+    "deploy_arm": "yarn run setup_arm && yarn run createdb && yarn run migratedb",
+    "setup_arm": "cd backend && BUCKET_MARKER_LOCAL=hot-reload EXTRA_CORS_ALLOWED_ORIGINS=* LAMBDA_MOUNT_CWD=$(pwd) serverless deploy -c serverless.local.yml --param architecture=arm64 --stage local",
+    "createdb": "cd backend && serverless invoke -c serverless.local.yml --stage local -f dbsetup --path test_data/createdb.json -l",
+    "migratedb": "cd backend && serverless invoke -c serverless.local.yml --stage local -f dbmigrations -l",
+    "invoke": "cd backend && serverless invoke -c serverless.local.yml --stage local -f"
+  },
+  "devDependencies": {
+    "serverless-localstack": "^1.0.6"
+  }
+}

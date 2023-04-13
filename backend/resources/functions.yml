@@ -1,0 +1,113 @@
+dbsetup:
+  handler: lambdas/migrations/db_setup.handler
+  timeout: 120
+  package:
+    patterns:
+      - 'lambdas/migrations/db_setup.py'
+      - '!**/__pycache__/**'
+  environment:
+    DB_MASTER_SECRET_ARN:
+      Ref: DBMasterSecret
+    DB_APP_SECRET_ARN:
+      Ref: DBAppSecret
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: 
+        - !Ref DBMasterSecret
+        - !Ref DBAppSecret
+
+dbmigrations:
+  handler: lambdas/migrations/migrations.handler
+  package:
+    patterns:
+      - 'lambdas/migrations/**'
+      - 'lambdas/models.py'
+      - '!**/__pycache__/**'
+      - '!lambdas/migrations/db_setup.py'
+  environment:
+    DB_APP_SECRET_ARN:
+      Ref: DBAppSecret
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref DBAppSecret
+
+users:
+  handler: lambdas/users.handler
+  package:
+    patterns:
+      - 'lambdas/users.py'
+      - 'lambdas/models.py'
+      - 'lambdas/dao/**'
+      - 'lambdas/services/**'
+      - '!**/__pycache__/**'
+  environment:
+    DB_APP_SECRET_ARN:
+      Ref: DBAppSecret
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref DBAppSecret
+
+devTestHelper:
+  handler: lambdas/dev/test_helper.handler
+  enabled: '"${self:provider.stage}" != "prod"'
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminDeleteUser
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminSetUserPassword
+      Resource: !GetAtt CognitoUserPoolUserPool.Arn
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref DBAppSecret
+  package:
+    patterns:
+      - 'lambdas/dev/test_helper.py'
+      - 'lambdas/models.py'
+      - 'lambdas/dao/**'
+      - 'lambdas/services/user_service.py'
+      - '!**/__pycache__/**'
+  environment:
+    USERPOOL_ID:
+      Ref: CognitoUserPoolUserPool
+    CLIENT_ID:
+      Ref: UserClient
+    DB_APP_SECRET_ARN:
+      Ref: DBAppSecret
+
+cognitoHooks:
+  handler: lambdas/cognito_hooks.handler
+  package:
+    patterns:
+      - 'lambdas/models.py'
+      - 'lambdas/dao/**'
+      - 'lambdas/services/**'
+      - 'lambdas/utils/**'
+      - 'lambdas/cognito_hooks.py'
+      - '!**/__pycache__/**'
+  events:
+    - cognitoUserPool:
+        pool: UserPool
+        trigger: PostConfirmation
+    - cognitoUserPool:
+        pool: UserPool
+        trigger: PostAuthentication
+    - cognitoUserPool:
+        pool: UserPool
+        trigger: PreTokenGeneration
+  environment:
+    DB_APP_SECRET_ARN:
+      Ref: DBAppSecret
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref DBAppSecret

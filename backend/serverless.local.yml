@@ -1,0 +1,109 @@
+service: example
+provider:
+  name: aws
+  architecture: ${param:architecture, 'arm64'}
+  runtime: python3.9
+  stage: ${opt:stage, 'local'}
+  region: ${opt:region, 'us-east-1'}
+  timeout: 30
+#  layers:
+#    - Ref: PythonRequirementsLambdaLayer
+  environment:
+    PYTHONPATH: '/var/task/lambdas:/opt/python:lambdas:/var/task/lambda_venv/lib/python3.9/site-packages'
+    LOG_LEVEL: "DEBUG"
+    ENVIRONMENT: LOCAL
+
+plugins:
+  - serverless-plugin-conditional-functions
+  - serverless-localstack
+  - serverless-iam-roles-per-function
+  # - serverless-python-requirements
+  - serverless-appsync-plugin
+
+custom:
+  appSync: ${file(resources/appSync.yml):appSync}
+#  pythonRequirements:
+#    dockerizePip: true
+#    layer: true
+  localstack:
+    host: http://127.0.0.1
+    stages:
+      - local
+    lambda:
+      mountCode: true
+    autostart: true
+  domainName:
+      default: example.com.invalid
+#  CertificateArn: LocalCertArn
+#  hostedZoneIds:
+#    default: LocalZoneID
+#  hostedZoneNames:
+#    default: LocalZoneNames
+#  SAMLMetaDataUrl:
+#    default: http://example.invalid
+
+functions:
+  - ${file(resources/functions.yml)}
+
+resources:
+  - Conditions:
+      IsNotLocal: !Not [!Equals ["${self:provider.stage}","local"]]
+  - ${file(resources/cognito.yml)}
+  - ${file(resources/cognitoGroups.yml)}
+  - ${file(resources/iam.yml)}
+  - Resources:
+      DBCluster:
+        Type: "AWS::RDS::DBCluster"
+        DeletionPolicy: Snapshot
+        UpdateReplacePolicy: Snapshot
+        Properties:
+          DatabaseName: test
+          DBClusterIdentifier: "${self:service}-${self:provider.stage}-db-cluster"
+          EnableHttpEndpoint: true
+          Engine: aurora-postgresql
+          EngineVersion: "11"
+          MasterUsername: possu
+          MasterUserPassword: test
+          StorageEncrypted: true
+          UseLatestRestorableTime: true
+      DBMasterSecret:
+        Type: 'AWS::SecretsManager::Secret'
+        Properties:
+          Name: "${self:service}-${self:provider.stage}-DB-master-secret"
+          Description: "RDS Master credentials for ${self:service}-${self:provider.stage}"
+          SecretString: '{"username": "possu", "host": "localhost.localstack.cloud", "port": "4510", "dbname": "test", "password": "test"}'
+      DBAppSecret:
+        Type: 'AWS::SecretsManager::Secret'
+        Properties:
+          Name: "${self:service}-${self:provider.stage}-DB-app-secret"
+          Description: "RDS App credentials for ${self:service}-${self:provider.stage}"
+          SecretString: '{"username": "example", "host": "localhost.localstack.cloud", "port": "4510", "dbname": "example", "password": "example"}'
+      JiraTokenSecret:
+        Type: 'AWS::SecretsManager::Secret'
+        Properties:
+          Name: ${self:service}-${self:provider.stage}-jira-token
+          Description: 'Jira token for ${self:service}-${self:provider.stage}'
+          Tags: ${file(../commonResources/defaultTags.yml):TagsList}
+          SecretString: A ## Manually add the secret from UI
+
+  - Outputs:
+      HostedUI:
+        Value: localhost.localstack.cloud
+      Region:
+        Value: ${self:provider.region}
+      Local:
+        Value: true
+      AppSyncUrl:
+        Value: !Join [
+          "",
+          [
+            "http://localhost:4566/graphql/",
+            !GetAtt GraphQlApi.ApiId,
+          ],
+        ]
+
+package:
+  individually: true
+  patterns:
+    - '!**/**'
+    - './venv/**'

@@ -1,0 +1,7 @@
+localstack
+pylint
+invoke
+pytest
+awscli-local
+gql[all]
+random-username

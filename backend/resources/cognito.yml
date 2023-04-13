@@ -1,0 +1,83 @@
+---
+Resources: 
+  CognitoUserPoolUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ${self:service}-${self:provider.stage}-userpool
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+        - Name: groups
+          AttributeDataType: String
+          Required: false
+          Mutable: true
+          StringAttributeConstraints: 
+            MaxLength: "2048"
+            MinLength: "1"
+      AutoVerifiedAttributes: ["email"]
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      UsernameConfiguration:
+        CaseSensitive: false
+      UserPoolTags: ${file(../commonResources/defaultTags.yml):TagsObject}
+
+  UserClient:
+    DependsOn:
+      - IDPProvider
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: user-pool-ui
+      GenerateSecret: false
+      CallbackURLs:
+        - "http://localhost:3000/authorize"
+        - "https://${self:custom.domainName.${self:provider.stage}, self:custom.domainName.default}/authorize"
+      LogoutURLs:
+        - "http://localhost:3000/logout"
+        - "https://${self:custom.domainName.${self:provider.stage}, self:custom.domainName.default}/logout"
+      UserPoolId: { Ref: CognitoUserPoolUserPool }
+      AccessTokenValidity: 5
+      IdTokenValidity: 5
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
+      SupportedIdentityProviders:
+        - COGNITO
+        - AAD
+      ReadAttributes:
+        - name
+        - custom:groups
+        - email
+        - email_verified
+        - family_name
+        - given_name
+      WriteAttributes:
+        - custom:groups
+        - name
+        - email
+        - family_name
+        - given_name
+        
+  UserDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Condition: IsNotLocal
+    Properties:
+      UserPoolId: { Ref: CognitoUserPoolUserPool }
+      Domain: ${self:service}-${self:provider.stage}
+  
+Outputs:
+  UserPoolId:
+    Value: !Ref CognitoUserPoolUserPool
+  UserPoolClientId:
+    Value: !Ref UserClient
+  
