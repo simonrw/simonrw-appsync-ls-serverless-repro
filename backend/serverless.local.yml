@@ -6,10 +6,10 @@ provider:
   stage: ${opt:stage, 'local'}
   region: ${opt:region, 'us-east-1'}
   timeout: 30
-#  layers:
-#    - Ref: PythonRequirementsLambdaLayer
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
   environment:
-    PYTHONPATH: '/var/task/lambdas:/opt/python:lambdas:/var/task/lambda_venv/lib/python3.9/site-packages'
+    PYTHONPATH: '/var/task/lambdas:/opt/python:lambdas'
     LOG_LEVEL: "DEBUG"
     ENVIRONMENT: LOCAL
 
@@ -17,14 +17,14 @@ plugins:
   - serverless-plugin-conditional-functions
   - serverless-localstack
   - serverless-iam-roles-per-function
-  # - serverless-python-requirements
+  - serverless-python-requirements
   - serverless-appsync-plugin
 
 custom:
   appSync: ${file(resources/appSync.yml):appSync}
-#  pythonRequirements:
-#    dockerizePip: true
-#    layer: true
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
   localstack:
     host: http://127.0.0.1
     stages:
@@ -101,9 +101,3 @@ resources:
             !GetAtt GraphQlApi.ApiId,
           ],
         ]
-
-package:
-  individually: true
-  patterns:
-    - '!**/**'
-    - './venv/**'
