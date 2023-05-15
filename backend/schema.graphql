@@ -1,5 +1,12 @@
 schema {
   query: Query
+  mutation: Mutation
+}
+
+type SubscriptionResult @aws_cognito_user_pools @aws_iam {
+  traceId: ID!
+  message: String!
+  id: ID
 }
 
 type Result {
@@ -20,6 +27,15 @@ type Query {
     @aws_auth
 
   getUser(userName: String!): UserAccount!
+    @aws_cognito_user_pools(cognito_groups: ["SYSADMIN"])
+    @aws_auth(cognito_groups: ["SYSADMIN"])
+
+}
+
+type Mutation {
+  reportStatus(traceId: ID!, message: String!, id: ID): SubscriptionResult!
+    @aws_iam
+  generateReport(traceId: ID!, organisationId: ID!, reportName: String!, month: Int!, year: Int!): Result
     @aws_cognito_user_pools(cognito_groups: ["SYSADMIN"])
     @aws_auth(cognito_groups: ["SYSADMIN"])
 }

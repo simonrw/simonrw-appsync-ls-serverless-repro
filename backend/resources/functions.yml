@@ -111,3 +111,45 @@ cognitoHooks:
       Action:
         - secretsmanager:GetSecretValue
       Resource: !Ref DBAppSecret
+
+generateReport:
+  handler: lambdas/generate_report.handler
+  environment:
+    GRAPHQL_ENDPOINT: ${self:custom.envVariableGRAPHQL_ENDPOINT}
+  package:
+    patterns:
+      - 'lambdas/generate_report.py'
+      - 'lambdas/utils/**'
+      - schema.graphql
+      - scalars.graphql
+      - '!**/__pycache__/**'
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - appsync:GraphQL
+      Resource:
+        - !Join [
+          "",
+          [
+            "arn:aws:appsync:",
+            !Ref AWS::Region,
+            ":",
+            !Ref AWS::AccountId,
+            ":apis/",
+            !GetAtt GraphQlApi.ApiId,
+            '/types/Mutation/fields/reportStatus'
+          ]
+        ]
+        - !Join [
+          "",
+          [
+            "arn:aws:appsync:",
+            !Ref AWS::Region,
+            ":",
+            !Ref AWS::AccountId,
+            ":apis/",
+            !GetAtt GraphQlApi.ApiId,
+            '/types/SubscriptionResult/*'
+          ]
+        ]
+        

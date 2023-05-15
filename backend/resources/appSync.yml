@@ -7,6 +7,8 @@ appSync:
     defaultAction: ALLOW
     userPoolId: !Ref CognitoUserPoolUserPool
   schema: schema.graphql
+  additionalAuthenticationProviders:
+    - AWS_IAM
   dataSources:
     - type: AWS_LAMBDA
       name: Lambda_users
@@ -14,6 +16,16 @@ appSync:
       config:
         functionName: users
         serviceRoleArn: { Fn::GetAtt: [AppSyncLambdaServiceRole, Arn] }
+    - type: AWS_LAMBDA
+      name: Lambda_generateReport
+      description: 'users Lambda DataSource'
+      config:
+        functionName: generateReport
+        serviceRoleArn: { Fn::GetAtt: [AppSyncLambdaServiceRole, Arn] }
+    - type: NONE
+      name: NoneDataSource
+      description: 'users Lambda DataSource'
+  mappingTemplatesLocation: resources/templates/
   mappingTemplates:
     - type: Query
       request: false
@@ -25,3 +37,13 @@ appSync:
       response: false
       dataSource: Lambda_users
       field: getUser
+    - type: Mutation
+      request: false
+      response: false
+      dataSource: Lambda_generateReport
+      field: generateReport
+    - type: Mutation
+      dataSource: NoneDataSource
+      request: "simple_request.vtl"
+      response: "simple_response.vtl"
+      field: reportStatus

@@ -17,34 +17,6 @@ class PortalUtils(metaclass=Singleton):
         self.sysadmin = self.aws.authenticate(self.sysadmin)
 
 
-def create_org(ctx):
-    org_name = generate_username()[0]
-    utils = PortalUtils(ctx=ctx)
-    utils.authenticate_sysadmin()
-    client = get_gql_client(ctx=ctx, user=utils.sysadmin)
-    ds: DSLSchema = DSLSchema(client.schema)
-    query = DSLMutation(
-        ds.Mutation.createOrganisation.args(
-            name=org_name,
-            displayName=org_name,
-            rootName=org_name
-        ).select(
-            ds.Organisation.id,
-            ds.Organisation.name,
-            ds.Organisation.displayName,
-            ds.Organisation.rootName,
-           )
-       )
-    result = query_gql(client=client, query=query)
-    organisation = result['createOrganisation']
-    org_uuid = str_utils.get_uuid(organisation['id'])
-    assert org_uuid is not None
-    assert organisation['name'] == org_name
-    assert organisation['displayName'] == org_name
-    assert organisation['rootName'] == org_name
-
-    return organisation
-
 
 def ticket_sla_select(ds: DSLSchema):
     frag = DSLInlineFragment()
