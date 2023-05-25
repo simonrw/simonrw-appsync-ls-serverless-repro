@@ -17,11 +17,9 @@ Check logs of generateReport lambda.
 Contains Unauthorized error that should not be there (IAM authorization). This works in AWS (have not tested this branch in AWS but our own code which is mostly the same)
 
 
-This branch uses Localstack 1.4.0 pro so API key required. (Could not get v2 working because of bug described in branch docker_crash)
-
 ## Troubleshooting
 
-If DB migrations are not going though (they are run when calling `yarn deploy`) check which port DB uses and set that port (if not 4511) in `backend/lambdas/services/db_manager.py` line 13 and run
+If DB migrations are not going though (they are run when calling `yarn deploy`) check which port DB uses and set that port (if not 4510) in `backend/lambdas/services/db_manager.py` line 13 and run
 ```
 yarn createdb
 yarn migratedb

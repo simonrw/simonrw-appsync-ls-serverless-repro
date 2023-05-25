@@ -28,7 +28,8 @@ class DbManager(metaclass=Singleton):  # pylint: disable=too-many-instance-attri
                  isolation_level=None,
                  debug=False):
 
-        self.secret = secrets_service.get_secret_value(connection_secret, result_type=dict)
+        self.secret = secrets_service.get_secret_value(
+            connection_secret, result_type=dict)
         self.db_name = db_name
         self.username = self.secret['username']
         self.pool_pre_ping = pool_pre_ping
@@ -86,4 +87,3 @@ def with_db_session(fn):
                 db.session.rollback()
                 raise ServiceException("Internal server error") from e
     return wrapper
-

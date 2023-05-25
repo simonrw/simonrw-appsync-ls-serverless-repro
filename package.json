@@ -26,7 +26,7 @@
   "scripts": {
     "deploy_arm": "yarn run setup_arm && yarn run createdb && yarn run migratedb",
     "setup_arm": "cd backend && BUCKET_MARKER_LOCAL=hot-reload EXTRA_CORS_ALLOWED_ORIGINS=* LAMBDA_MOUNT_CWD=$(pwd) serverless deploy -c serverless.local.yml --param architecture=arm64 --stage local --verbose",
-    "setup": "cd backend && IMAGE_NAME=localstack/localstack-pro:1.4.0 EXTRA_CORS_ALLOWED_ORIGINS=* LAMBDA_MOUNT_CWD=$(pwd) serverless deploy -c serverless.local.yml --param architecture=x86_64 --stage local --verbose",
+    "setup": "cd backend && BUCKET_MARKER_LOCAL=hot-reload EXTRA_CORS_ALLOWED_ORIGINS=* LAMBDA_MOUNT_CWD=$(pwd) serverless deploy -c serverless.local.yml --param architecture=x86_64 --stage local --verbose",
     "deploy": "yarn run setup && yarn run createdb && yarn run migratedb",
     "createdb": "cd backend && serverless invoke -c serverless.local.yml --stage local -f dbsetup --path test_data/createdb.json -l",
     "migratedb": "cd backend && serverless invoke -c serverless.local.yml --stage local -f dbmigrations -l",

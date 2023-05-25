@@ -65,13 +65,13 @@ resources:
         Properties:
           Name: "${self:service}-${self:provider.stage}-DB-master-secret"
           Description: "RDS Master credentials for ${self:service}-${self:provider.stage}"
-          SecretString: '{"username": "possu", "host": "localhost.localstack.cloud", "port": "4511", "dbname": "test", "password": "test"}'
+          SecretString: '{"username": "possu", "host": "localhost.localstack.cloud", "port": "4510", "dbname": "test", "password": "test"}'
       DBAppSecret:
         Type: 'AWS::SecretsManager::Secret'
         Properties:
           Name: "${self:service}-${self:provider.stage}-DB-app-secret"
           Description: "RDS App credentials for ${self:service}-${self:provider.stage}"
-          SecretString: '{"username": "example", "host": "localhost.localstack.cloud", "port": "4511", "dbname": "example", "password": "example"}'
+          SecretString: '{"username": "example", "host": "localhost.localstack.cloud", "port": "4510", "dbname": "example", "password": "example"}'
       JiraTokenSecret:
         Type: 'AWS::SecretsManager::Secret'
         Properties:
