@@ -59,12 +59,17 @@ jobs:
 
       - name: Pull localstack pro image
         run: docker pull localstack/localstack-pro
-      
-      - name: Run localstack
+
+      - name: Start localstack
         env:
-          DNS_ADDRESS: 127.0.0.1
+          DNS_ADDRESS: "0.0.0.0"
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           LS_LOG: trace
+          GATEWAY_LISTEN: "0.0.0.0:4566"
+          DEBUG: "1"
+        run: ./venv/bin/localstack start --detached
+
+      - name: Deploy and run tests
         run: |
           source venv/bin/activate
           yarn deploy_ci

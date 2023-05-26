@@ -26,12 +26,12 @@ custom:
     dockerizePip: true
     layer: true
   localstack:
-    host: http://127.0.0.1
+    # host: http://127.0.0.1
     stages:
       - local
     lambda:
       mountCode: true
-    autostart: true
+    autostart: false
   domainName:
       default: example.com.invalid
 #  CertificateArn: LocalCertArn
