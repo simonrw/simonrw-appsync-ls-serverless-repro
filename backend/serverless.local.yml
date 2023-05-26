@@ -26,6 +26,7 @@ custom:
     dockerizePip: true
     layer: true
   localstack:
+    debug: true
     host: http://127.0.0.1
     stages:
       - local
