@@ -1,3 +1,5 @@
+Added integration testing to .github/workflows/python_backend_build.yml
+
 On repository root run
 - `yarn`
 - `cd backend`
