@@ -67,7 +67,10 @@ jobs:
           LS_LOG: trace
         run: |
           source venv/bin/activate
-          yarn deploy_ci
+          yarn deploy_ci || true
+          docker ps
+          docker inspect localstack_main
+          docker logs localstack_main
       
       - name: Configure AWS
         uses: Fooji/create-aws-profile-action@v1
