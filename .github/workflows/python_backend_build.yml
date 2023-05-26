@@ -62,6 +62,7 @@ jobs:
       
       - name: Run localstack
         env:
+          DNS_ADDRESS: "0.0.0.0"
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           LS_LOG: trace
         run: |
