@@ -1,0 +1,83 @@
+name: Python Backend Build
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+jobs:
+  code-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install requirements
+        run: |
+          pip3 install -r requirements.txt
+      - name: Install dev requirements
+        run: pip3 install -r requirements_dev.txt
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'yarn'
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install serverless dependencies
+        run: yarn --immutable
+      
+      - name: Setup virtualenv for deployment
+        run: |
+          python3.9 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+
+      - name: Pull localstack pro image
+        run: docker pull localstack/localstack-pro
+      
+      - name: Run localstack
+        env:
+          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LS_LOG: trace
+        run: |
+          source venv/bin/activate
+          yarn deploy_ci
+      
+      - name: Configure AWS
+        uses: Fooji/create-aws-profile-action@v1
+        with:
+          profile: serverless
+          region: us-east-1
+          key: askndkjnfakjsndkasj
+          secret: laksndlaksnflknasldkn
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          invoke alltests
+
